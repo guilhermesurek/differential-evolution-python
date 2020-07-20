@@ -15,13 +15,14 @@ class InitializationError(DEError):
 
 class DEManager():
 
-    def __init__(self, run, de_class, kw_args):
+    def __init__(self, run, de_class, kw_args, excel_results='results.xlsx'):
         self.__de_class = de_class
         self.__run = run
         self.__kw_args = kw_args
         self._df_res_columns = ['ID', 'Population_Size', 'Mutation_Factor', 'Crossover_Prob', 'Max_Iter', 'Max_FES', 'Min_Error', 'Min_Error_Length', 'Run',
                                  'Iterations', 'FES', 'Eval', 'XBest']
         self._df_res = pd.DataFrame(columns=self._df_res_columns)
+        self._res_path = excel_results
 
     def run(self):
         final_results = []
@@ -36,14 +37,12 @@ class DEManager():
                 run_results = DE.get_results()          # Get results
                 results.append(run_results)             # Save results
                 # Save result in df
-                import ipdb; ipdb.set_trace()
                 res_to_df = [i, self.__kw_args[i].get('population_size'), self.__kw_args[i].get('mutation_factor'), self.__kw_args[i].get('cross_prob'), self.__kw_args[i].get('max_it'), self.__kw_args[i].get('max_fes'),
                              self.__kw_args[i].get('min_error'), self.__kw_args[i].get('min_error_length'), j]
                 res_to_df.extend(run_results[:-1])
                 res_to_df.append('; '.join([str(x) for x in run_results[-1]]))
                 res_to_df = pd.Series(res_to_df, index=self._df_res_columns)
                 self._df_res = self._df_res.append(res_to_df, ignore_index=True)
-                print(self._df_res)
             # Report Result
             try:
                 msg = f"Population Size: {self.__kw_args[i]['population_size']} | Mutation Factor: {self.__kw_args[i]['mutation_factor']} | Crossover Prob: {self.__kw_args[i]['cross_prob']} | Max Iter.: {self.__kw_args[i]['max_it']}"
@@ -75,7 +74,7 @@ class DEManager():
         for k in range(len(final_results)):
             print("  {0:03d}   |  {1:9.0f}+{2:.0f}".format(k, final_results[k][5], final_results[k][6]))
         # Save df to excel
-        self._df_res.to_excel("results.xlsx")
+        self._df_res.to_excel(self._res_path)
 
 class DifferentialEvolution():
     '''
